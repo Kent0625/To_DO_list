@@ -1,0 +1,210 @@
+:root {
+    /* Semi-transparent column background */
+    --column-bg: rgba(235, 236, 240, 0.95);
+    --card-bg: #ffffff;
+    --text-color: #172b4d;
+    --text-secondary: #5e6c84;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    
+    /* --- FLASH RUNNING GIF BACKGROUND --- */
+    background-image: url('https://media1.tenor.com/m/I7Mkq3gAQv4AAAAd/running-barry-allen.gif');
+    
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-color);
+}
+
+/* Board Layout */
+.board-container {
+    display: flex;
+    overflow-x: auto;
+    height: 100%;
+    padding: 20px;
+    align-items: flex-start;
+    gap: 12px;
+    
+    /* Dark overlay (0.4) to ensure text is readable over the busy GIF */
+    background-color: rgba(0, 0, 0, 0.4); 
+}
+
+/* Columns */
+.column {
+    background-color: var(--column-bg);
+    min-width: 272px;
+    max-width: 272px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    max-height: 95%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.column-header {
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.column-header h2 {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.card-list {
+    padding: 0 8px;
+    flex-grow: 1;
+    overflow-y: auto;
+    min-height: 50px;
+}
+
+/* Cards */
+.card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(9, 30, 66, 0.25);
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    cursor: grab;
+    font-size: 14px;
+    position: relative;
+    transition: transform 0.1s;
+}
+
+.card:hover {
+    background-color: #fafbfc;
+}
+
+.card:active {
+    cursor: grabbing;
+    transform: rotate(2deg);
+}
+
+.card-title {
+    margin-bottom: 4px;
+    display: block;
+}
+
+.card-tags {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.tag {
+    height: 8px;
+    width: 40px;
+    background-color: #61bd4f;
+    border-radius: 4px;
+}
+
+.card-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    display: none;
+}
+
+.card.has-image .card-image {
+    display: block;
+}
+
+/* Add Card Button */
+.add-card-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 10px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 0 0 12px 12px;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.add-card-btn:hover {
+    background-color: rgba(9, 30, 66, 0.08);
+    color: var(--text-color);
+}
+
+.add-card-btn::before {
+    content: "+";
+    margin-right: 6px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Drag and Drop Visuals */
+.card.dragging {
+    opacity: 0.5;
+    border: 2px dashed #0079bf;
+}
+
+.column.drag-over {
+    background-color: #dcdfe4;
+}
+
+/* Modal for adding tasks */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); /* Darker modal background */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal input {
+    width: 90%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #dfe1e6;
+    border-radius: 4px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+button.primary {
+    background: #0079bf;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button.cancel {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
