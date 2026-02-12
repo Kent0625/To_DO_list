@@ -110,7 +110,7 @@ def read_task(task_id: int, session: Session = Depends(get_session)):
     return task
 
 
-# Update Task (including moving between columns)
+# Update Task 
 @app.put("/tasks/{task_id}", response_model=Task)
 def update_task(task_id: int, task_update: TaskUpdate, session: Session = Depends(get_session)):
     task = session.get(Task, task_id)
@@ -144,4 +144,4 @@ def delete_task(task_id: int, session: Session = Depends(get_session)):
 # Root
 @app.get("/")
 def root():
-    return {"message": "Kanban API is running 🚀"}
+    return {"message": "Kanban API is running"}

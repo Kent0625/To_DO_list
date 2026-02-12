@@ -1,4 +1,6 @@
 // --- CONFIGURATION ---
+const API_URL = 'http://localhost:8000/tasks/';
+
 const COLUMNS = [
     { id: 'todo', title: 'To Do' },
     { id: 'inprogress', title: 'In Progress' },
@@ -347,6 +349,42 @@ function confirmAddCard() {
     closeModal();
     renderBoard();
 }
+
+// --- BACKEND SYNC FUNCTIONS ---
+async function saveAllToBackend() {
+    try {
+        // Get all tasks from backend
+        const res = await fetch(API_URL);
+        const backendTasks = await res.json();
+        
+        // Delete all existing tasks
+        for (const task of backendTasks) {
+            await fetch(`${API_URL}${task.id}`, { method: 'DELETE' });
+        }
+        
+        // Create all current tasks
+        for (const task of tasks) {
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: task.title,
+                    description: '',
+                    status: task.columnId
+                })
+            });
+        }
+        
+        alert('All tasks saved to database!');
+        await loadBoard(); // Reload to get updated IDs from backend
+    } catch (err) {
+        console.error('Failed to save tasks:', err);
+        alert('Failed to save tasks. Make sure the backend is running.');
+    }
+}
+
+// Add event listener for Save All button
+document.getElementById('saveAllBtn').addEventListener('click', saveAllToBackend);
 
 // Initialize Board
 loadBoard();
