@@ -24,24 +24,25 @@ let currentColumnToAdd = null;
 let draggedCardId = null;
 
 // --- PERSISTENCE ---
-function loadBoard() {
-    const saved = localStorage.getItem('speedsterTasks');
-    if (saved) {
-        try {
-            tasks = JSON.parse(saved);
-        } catch (e) {
-            console.error('Failed to parse saved tasks', e);
-            tasks = [...DEFAULT_TASKS];
-        }
-    } else {
-        tasks = [...DEFAULT_TASKS];
+async function loadBoard() {
+    try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+
+        // Convert backend format to frontend format
+        tasks = data.map(task => ({
+            id: task.id,
+            columnId: task.status,   // status = column
+            title: task.title,
+            hasImage: false
+        }));
+
+        renderBoard();
+    } catch (err) {
+        console.error("Failed to load tasks", err);
     }
 }
 
-function saveBoard() {
-    localStorage.setItem('speedsterTasks', JSON.stringify(tasks));
-    alert('Board Saved Successfully!');
-}
 
 // --- RENDERING ---
 function renderBoard() {
@@ -350,9 +351,6 @@ function confirmAddCard() {
 // Initialize Board
 loadBoard();
 renderBoard();
-// Attach event listener to Save All Button
-document.getElementById('saveAllBtn').addEventListener('click', saveBoard);
-
 
 // After initial render, create gutter actions
 createGutterActions();
