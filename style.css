@@ -1,8 +1,8 @@
 :root {
-    --column-bg: rgba(235, 236, 240, 0.95);
-    --card-bg: #ffffff;
-    --text-color: #172b4d;
-    --text-secondary: #5e6c84;
+    --column-bg: #a51818;
+    --card-bg: #f1bc28;
+    --text-color: #ffffff;
+    --text-secondary: #eeeeee;
 }
 
 body {
@@ -43,6 +43,58 @@ body {
     max-height: 95%;        /* Prevent columns from being taller than screen */
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
+
+/* wrapper so gutter actions can be absolutely positioned outside the column */
+.column-wrap {
+    display: inline-block;
+    position: relative;
+    margin-right: 24px; /* room for gutter */
+    vertical-align: top;
+}
+
+.column-wrap .column { overflow: visible; }
+
+/* gutter actions placed outside the column */
+.column-gutter {
+    position: absolute;
+    left: 100%;
+    margin-left: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 100;
+}
+
+.gutter-btn {
+    background: transparent;
+    border: none;
+    color: transparent; /* hide fallback text */
+    font-size: 0;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    cursor: pointer;
+    background-image: url("gutter%20icon.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.gutter-menu {
+    display: none;
+    background: rgba(0,0,0,0.85);
+    color: var(--text-color);
+    border-radius: 6px;
+    padding: 6px 8px;
+    min-width: 120px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+.gutter-menu.open { display: block; }
+
+.gutter-menu button { display: block; width: 100%; text-align: left; background: transparent; border: none; color: inherit; padding: 6px 4px; border-radius: 4px; }
+
+.gutter-menu button:hover { background: rgba(255,255,255,0.06); }
 
 .column-header {
     padding: 12px 16px;
@@ -223,4 +275,66 @@ button.cancel {
         /* On phone, we show all cards, no internal scroll per column */
         overflow-y: visible; 
     }
+}
+
+/* --- CARD ACTIONS / MENU (text-only buttons) --- */
+.card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    z-index: 5;
+}
+
+.card-actions button,
+
+
+.card-menu {
+    display: none;
+    position: absolute;
+    top: 28px;
+    right: 0;
+    background: rgba(0,0,0,0.75);
+    color: var(--text-color);
+    border-radius: 6px;
+    padding: 6px 4px;
+    min-width: 100px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+.card-menu.open {
+    display: block;
+}
+
+.card-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: inherit;
+    padding: 6px 8px;
+    border-radius: 4px;
+}
+
+.card-menu button:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+/* Reveal menu on hover of the card for discoverability */
+.card:hover .card-menu-btn {
+    opacity: 1;
+}
+.card:hover .card-menu {
+    /* do not automatically open, but make button more noticeable; keep menu hidden until clicked */
+}
+
+.card-edit-input {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.15);
+    font: inherit;
 }

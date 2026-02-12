@@ -59,7 +59,90 @@ function renderBoard() {
         columnEl.appendChild(header);
         columnEl.appendChild(cardList);
         columnEl.appendChild(addBtn);
-        board.appendChild(columnEl);
+
+        // wrap column so we can position gutter actions outside the column
+        const wrap = document.createElement('div');
+        wrap.className = 'column-wrap';
+        wrap.appendChild(columnEl);
+        board.appendChild(wrap);
+    });
+    // create gutter actions after DOM nodes exist
+    setTimeout(createGutterActions, 0);
+}
+
+// Create gutter actions for each card in a column wrap (called after renderBoard)
+function createGutterActions() {
+    // remove any existing gutter actions
+    document.querySelectorAll('.column-gutter').forEach(n => n.remove());
+
+    document.querySelectorAll('.column-wrap').forEach(wrap => {
+        const columnEl = wrap.querySelector('.column');
+        const cardList = wrap.querySelector('.card-list');
+        if (!columnEl || !cardList) return;
+
+        const tasksInColumn = tasks.filter(t => t.columnId === columnEl.getAttribute('data-id'));
+
+        tasksInColumn.forEach(task => {
+            const cardEl = columnEl.querySelector(`.card[data-id="${task.id}"]`);
+            if (!cardEl) return;
+
+            const gutter = document.createElement('div');
+            gutter.className = 'column-gutter';
+            gutter.setAttribute('data-id', task.id);
+
+            const btn = document.createElement('button');
+            btn.className = 'gutter-btn';
+            btn.type = 'button';
+            btn.innerText = '⋯';
+            gutter.appendChild(btn);
+
+            const menu = document.createElement('div');
+            menu.className = 'gutter-menu';
+
+            const editBtn = document.createElement('button'); editBtn.type = 'button'; editBtn.innerText = 'Edit'; menu.appendChild(editBtn);
+            const saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.innerText = 'Save'; menu.appendChild(saveBtn);
+            const deleteBtn = document.createElement('button'); deleteBtn.type = 'button'; deleteBtn.innerText = 'Delete'; menu.appendChild(deleteBtn);
+
+            gutter.appendChild(menu);
+            wrap.appendChild(gutter);
+
+            // position gutter aligned to card
+            const top = cardEl.offsetTop;
+            gutter.style.top = top + 'px';
+
+            // toggle
+            btn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                document.querySelectorAll('.gutter-menu.open').forEach(m => m.classList.remove('open'));
+                menu.classList.toggle('open');
+            });
+
+            editBtn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                task.editing = true; renderBoard(); setTimeout(createGutterActions, 0);
+            });
+
+            saveBtn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                const card = columnEl.querySelector(`.card[data-id="${task.id}"]`);
+                if (card) {
+                    const input = card.querySelector('.card-edit-input');
+                    if (input) {
+                        const newVal = input.value.trim();
+                        if (newVal) task.title = newVal;
+                        task.editing = false; renderBoard(); setTimeout(createGutterActions, 0); return;
+                    }
+                }
+                const newTitle = prompt('Edit task title:', task.title);
+                if (newTitle) { task.title = newTitle; task.editing = false; renderBoard(); setTimeout(createGutterActions, 0); }
+            });
+
+            deleteBtn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                tasks = tasks.filter(t => t.id !== task.id);
+                renderBoard(); setTimeout(createGutterActions, 0);
+            });
+        });
     });
 }
 
@@ -81,16 +164,116 @@ function createCardElement(task) {
         document.querySelectorAll('.column').forEach(c => c.classList.remove('drag-over'));
     });
 
-    let html = '';
+    // Image (optional)
     if (task.hasImage) {
-        html += `<img src="${task.imageUrl}" class="card-image" alt="attachment">`;
+        const img = document.createElement('img');
+        img.src = task.imageUrl;
+        img.className = 'card-image';
+        img.alt = 'attachment';
+        el.appendChild(img);
     }
+
+    // Tags for done column
     if (task.columnId === 'done') {
-            html += `<div class="card-tags"><div class="tag"></div></div>`;
+        const tags = document.createElement('div');
+        tags.className = 'card-tags';
+        const tag = document.createElement('div');
+        tag.className = 'tag';
+        tags.appendChild(tag);
+        el.appendChild(tags);
     }
-    html += `<span class="card-title">${task.title}</span>`;
-    
-    el.innerHTML = html;
+
+    // Title container (will hold span or input while editing)
+    const titleContainer = document.createElement('div');
+    titleContainer.className = 'card-title-container';
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'card-title';
+    titleSpan.innerText = task.title;
+    titleContainer.appendChild(titleSpan);
+    el.appendChild(titleContainer);
+
+    // Actions (three dots + menu)
+    const actions = document.createElement('div');
+    actions.className = 'card-actions';
+
+    const menuBtn = document.createElement('button');
+    menuBtn.className = 'card-menu-btn';
+    menuBtn.type = 'button';
+    menuBtn.innerText = '⋯';
+    actions.appendChild(menuBtn);
+
+    const menu = document.createElement('div');
+    menu.className = 'card-menu';
+
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.innerText = 'Edit';
+    menu.appendChild(editBtn);
+
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'button';
+    saveBtn.innerText = 'Save';
+    menu.appendChild(saveBtn);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.innerText = 'Delete';
+    menu.appendChild(deleteBtn);
+
+    actions.appendChild(menu);
+    el.appendChild(actions);
+
+    // If task is in editing state, show input instead of span
+    if (task.editing) {
+        const input = document.createElement('input');
+        input.className = 'card-edit-input';
+        input.type = 'text';
+        input.value = task.title;
+        titleContainer.replaceChild(input, titleSpan);
+        // Focus at end
+        setTimeout(() => {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+        }, 0);
+    }
+
+    // Menu toggle
+    menuBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        // close other menus
+        document.querySelectorAll('.card-menu.open').forEach(m => m.classList.remove('open'));
+        menu.classList.toggle('open');
+    });
+
+    // Edit handler: toggle edit mode on task and re-render
+    editBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        task.editing = true;
+        renderBoard();
+    });
+
+    // Save handler: if input exists, save new title
+    saveBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const input = el.querySelector('.card-edit-input');
+        if (input) {
+            const newVal = input.value.trim();
+            if (newVal) task.title = newVal;
+            task.editing = false;
+            renderBoard();
+        } else {
+            // nothing to save, just close menu
+            menu.classList.remove('open');
+        }
+    });
+
+    // Delete handler
+    deleteBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        tasks = tasks.filter(t => t.id !== task.id);
+        renderBoard();
+    });
+
     return el;
 }
 
@@ -143,3 +326,12 @@ function confirmAddCard() {
 
 // Initialize Board
 renderBoard();
+
+// After initial render, create gutter actions
+createGutterActions();
+
+// Close any open card menus when clicking outside
+document.addEventListener('click', () => {
+    document.querySelectorAll('.card-menu.open').forEach(m => m.classList.remove('open'));
+    document.querySelectorAll('.gutter-menu.open').forEach(m => m.classList.remove('open'));
+});
