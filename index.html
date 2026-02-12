@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speedster Kanban Board</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Speedster Kanban Board</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <header class="app-header">
+        <h1>Speedster Board</h1>
+        <button id="saveAllBtn" class="save-all-btn">Save All</button>
+    </header>
 
     <div class="board-container" id="board">
         </div>
@@ -21,6 +25,8 @@
             </div>
         </div>
     </div>
+
+    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
 
     <script src="script.js"></script>
 </body>
