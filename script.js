@@ -1,4 +1,6 @@
 // --- CONFIGURATION ---
+const API_URL = 'http://localhost:8000/tasks/';
+
 const COLUMNS = [
     { id: 'todo', title: 'To Do' },
     { id: 'inprogress', title: 'In Progress' },
@@ -24,24 +26,25 @@ let currentColumnToAdd = null;
 let draggedCardId = null;
 
 // --- PERSISTENCE ---
-function loadBoard() {
-    const saved = localStorage.getItem('speedsterTasks');
-    if (saved) {
-        try {
-            tasks = JSON.parse(saved);
-        } catch (e) {
-            console.error('Failed to parse saved tasks', e);
-            tasks = [...DEFAULT_TASKS];
-        }
-    } else {
-        tasks = [...DEFAULT_TASKS];
+async function loadBoard() {
+    try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+
+        // Convert backend format to frontend format
+        tasks = data.map(task => ({
+            id: task.id,
+            columnId: task.status,   // status = column
+            title: task.title,
+            hasImage: false
+        }));
+
+        renderBoard();
+    } catch (err) {
+        console.error("Failed to load tasks", err);
     }
 }
 
-function saveBoard() {
-    localStorage.setItem('speedsterTasks', JSON.stringify(tasks));
-    alert('Board Saved Successfully!');
-}
 
 // --- RENDERING ---
 function renderBoard() {
@@ -347,12 +350,45 @@ function confirmAddCard() {
     renderBoard();
 }
 
+// --- BACKEND SYNC FUNCTIONS ---
+async function saveAllToBackend() {
+    try {
+        // Get all tasks from backend
+        const res = await fetch(API_URL);
+        const backendTasks = await res.json();
+        
+        // Delete all existing tasks
+        for (const task of backendTasks) {
+            await fetch(`${API_URL}${task.id}`, { method: 'DELETE' });
+        }
+        
+        // Create all current tasks
+        for (const task of tasks) {
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: task.title,
+                    description: '',
+                    status: task.columnId
+                })
+            });
+        }
+        
+        alert('All tasks saved to database!');
+        await loadBoard(); // Reload to get updated IDs from backend
+    } catch (err) {
+        console.error('Failed to save tasks:', err);
+        alert('Failed to save tasks. Make sure the backend is running.');
+    }
+}
+
+// Add event listener for Save All button
+document.getElementById('saveAllBtn').addEventListener('click', saveAllToBackend);
+
 // Initialize Board
 loadBoard();
 renderBoard();
-// Attach event listener to Save All Button
-document.getElementById('saveAllBtn').addEventListener('click', saveBoard);
-
 
 // After initial render, create gutter actions
 createGutterActions();
