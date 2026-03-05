@@ -1,4 +1,4 @@
-fastapi 
+-m fastapi 
 pytest
 enum
 typing
