@@ -1,0 +1,5 @@
+fastapi 
+pytest
+enum
+typing
+sqlmodel
