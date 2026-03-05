@@ -70,3 +70,4 @@ def test_delete_task():
     check = client.get(f"/tasks/{task_id}")
 
     assert check.status_code == 404
+
