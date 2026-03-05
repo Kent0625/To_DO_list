@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Optional, List
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, Field, create_engine, Session, select
@@ -63,7 +64,13 @@ def get_session():
 # -----------------------------
 # FASTAPI APP
 # -----------------------------
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app:FastAPI):
+    create_db_and_tables()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 # Enable CORS (so frontend JS can connect)
 app.add_middleware(
@@ -73,11 +80,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
 
 
 # -----------------------------
